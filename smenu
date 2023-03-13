@@ -1,0 +1,141 @@
+#!/usr/bin/env sh
+
+readc() { # arg: <variable-name>
+  if [ -t 0 ]; then
+    # if stdin is a tty device, put it out of icanon, set min and
+    # time to sane value, but don't otherwise touch other input or
+    # or local settings (echo, isig, icrnl...). Take a backup of the
+    # previous settings beforehand.
+    saved_tty_settings=$(stty -g)
+    stty -icanon min 1 time 0
+  fi
+  eval "$1="
+  while
+    # read one byte, using a work around for the fact that command
+    # substitution strips the last character.
+    c=$(dd bs=1 count=1 2> /dev/null; echo .)
+    c=${c%.}
+
+    # break out of the loop on empty input (eof) or if a full character
+    # has been accumulated in the output variable (using "wc -m" to count
+    # the number of characters).
+    [ -n "$c" ] &&
+      eval "$1=\${$1}"'$c
+        [ "$(($(printf %s "${'"$1"'}" | wc -m)))" -eq 0 ]'; do
+    continue
+  done
+  if [ -t 0 ]; then
+    # restore settings saved earlier if stdin is a tty device.
+    stty "$saved_tty_settings"
+  fi
+}
+
+menu() { # arg: file content (cat) as string or "string\nstring2\nstring3"
+
+  # var to store input from the user
+  input=""
+
+  clear
+
+  selected=0
+  while :
+  do
+
+    # clear terminal moving cursor to bottom
+    printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
+      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
+      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
+      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
+      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
+      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
+      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+
+    # create current list based on user input
+    current=""
+    if [ "$input" != "" ]; then
+      for arg in $(printf "$1" | grep "$input")
+      do
+        current="$current\n$arg"
+      done
+    else
+      current=$(printf "$1")
+    fi
+    currentlength=$(printf "$current" | wc -l)
+
+
+    # send "selected" to the first position if is out of currentlength
+    selected=$((selected*$(( selected < currentlength))))
+
+    # print selected arrows
+    i=0
+    for arg in $(printf "$current")
+    do
+      if [ $i = $selected ]; then
+        printf " >> $arg\n" 2>/dev/null
+      else
+        printf "$arg\n" 2>/dev/null
+      fi
+      i=$((i+1))
+    done
+
+    # print menu section
+    printf "\n\n"
+    printf "Default hotkeys: [enter] select (return if is equal to selection), [tab] select between current selection, [esc] clean\n"
+    printf "Menu: $input"
+
+    # read char and store it on "insert" var
+    readc insert
+
+    # analize char
+    case $(printf "%d" "'$insert") in
+      $(printf "27")) # esc
+        selected=0
+        input=""
+        ;;
+      $(printf "127")) # del
+        input="${input%?}"
+        ;;
+      $(printf "9")) # tab
+        selected=$((selected+$(( selected < currentlength))))
+        selected=$((selected-$((currentlength*$(( selected > currentlength))))))
+        ;;
+      $(printf "10")) # enter
+        i=0
+        for arg in $(printf "$current")
+        do
+          if [ $i = $selected ]; then
+            if [ "$input" = "$arg" ]; then
+              printf "$arg"
+              exit 0
+            else
+              input="$arg"
+            fi
+          fi
+          i=$((i+1))
+        done
+        ;;
+      *) # append char to input
+        input="$input$insert"
+        ;;
+    esac
+
+  done
+
+}
+
+# if no args are passed, read stdin to check if they come from pipe
+if [ $# = 0 ]; then
+  while read x ; do args="$args\n$x" ; done
+else
+  args=$@
+  # if args is a file, cat the content of that file into args
+  if [ -f "$args" ]; then
+    file="$args"
+    args=""
+    while read l; do
+      args="$args\n$l"
+    done < $file
+  fi
+fi
+
+menu "$args"
