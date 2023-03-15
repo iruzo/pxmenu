@@ -125,14 +125,18 @@ menu() { # arg: file content (cat) as string or "string\nstring2\nstring3"
 
 # if no args are passed, read stdin to check if they come from pipe
 if [ $# = 0 ]; then
-  while read x ; do args="$args\n$x" ; done
+  while read x
+  do
+    args="$args\n$x"
+  done
 else
   args=$@
   # if args is a file, cat the content of that file into args
   if [ -f "$args" ]; then
     file="$args"
     args=""
-    while read l; do
+    while read l
+    do
       args="$args\n$l"
     done < $file
   fi
