@@ -35,20 +35,12 @@ menu() { # arg: file content (cat) as string or "string\nstring2\nstring3"
   # var to store input from the user
   input=""
 
-  clear
-
   selected=0
   while :
   do
 
-    # clear terminal moving cursor to bottom
-    printf "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
-      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
-      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
-      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
-      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
-      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n \
-      \n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+    # clearing terminal
+    tput clear
 
     # create current list based on user input
     current=""
@@ -62,9 +54,11 @@ menu() { # arg: file content (cat) as string or "string\nstring2\nstring3"
     fi
     currentlength=$(printf "$current" | wc -l)
 
-
     # send "selected" to the first position if is out of currentlength
     selected=$((selected*$(( selected < currentlength))))
+
+    # move cursor to bottom
+    printf "\33[%d;%dH%s" "100" "0" " " 2>/dev/null
 
     # print selected arrows
     i=0
