@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/bin/sh
 
 readc() { # arg: <variable-name>
   if [ -t 0 ]; then
