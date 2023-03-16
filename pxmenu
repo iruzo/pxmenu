@@ -1,5 +1,8 @@
 #!/bin/sh
 
+POSIXLY_CORRECT=1
+export POSIXLY_CORRECT
+
 # restore stty on exit
 saved_tty_settings=""
 trap 'stty "$saved_tty_settings"; trap - EXIT; exit' EXIT INT HUP TERM
@@ -67,7 +70,7 @@ menu() { # arg: file content (cat) as string or "string\nstring2\nstring3"
     selected=$((selected*$(( selected < currentlength))))
 
     # move cursor to bottom
-    printf "\33[%d;%dH%s" "100" "0" " " 2>/dev/null
+    printf "\33[%d;%dH%s" "$(tput lines)" "0" " " 2>/dev/null
 
     # print selected arrows
     i=0
