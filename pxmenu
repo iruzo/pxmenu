@@ -5,6 +5,7 @@ saved_tty_settings=""
 trap 'stty "$saved_tty_settings"; trap - EXIT; exit' EXIT INT HUP TERM
 
 readc() { # arg: <variable-name>
+
   if [ -t 0 ]; then
     # if stdin is a tty device, put it out of icanon, set min and
     # time to sane value, but don't otherwise touch other input or
@@ -13,7 +14,9 @@ readc() { # arg: <variable-name>
     saved_tty_settings=$(stty -g)
     stty -icanon min 1 time 0
   fi
+
   eval "$1="
+
   while
     # read one byte, using a work around for the fact that command
     # substitution strips the last character.
@@ -23,15 +26,17 @@ readc() { # arg: <variable-name>
     # break out of the loop on empty input (eof) or if a full character
     # has been accumulated in the output variable (using "wc -m" to count
     # the number of characters).
-    [ -n "$c" ] &&
-      eval "$1=\${$1}"'$c
-        [ "$(($(printf %s "${'"$1"'}" | wc -m)))" -eq 0 ]'; do
+    [ -n "$c" ] && eval "$1=\${$1}"'$c
+        [ "$(($(printf %s "${'"$1"'}" | wc -m)))" -eq 0 ]'
+  do
     continue
   done
+
   if [ -t 0 ]; then
     # restore settings saved earlier if stdin is a tty device.
     stty "$saved_tty_settings"
   fi
+
 }
 
 menu() { # arg: file content (cat) as string or "string\nstring2\nstring3"
