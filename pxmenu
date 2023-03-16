@@ -1,5 +1,9 @@
 #!/bin/sh
 
+# restore stty on exit
+saved_tty_settings=""
+trap 'stty "$saved_tty_settings"; trap - EXIT; exit' EXIT INT HUP TERM
+
 readc() { # arg: <variable-name>
   if [ -t 0 ]; then
     # if stdin is a tty device, put it out of icanon, set min and
