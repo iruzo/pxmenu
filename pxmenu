@@ -55,34 +55,27 @@ menu() { # arg: file content (cat) as string or "string\nstring2\nstring3"
     tput clear
 
     # create current list based on user input
-    current=""
-    if [ "$input" != "" ]; then
-      for arg in $(printf "$1" | grep "$input")
-      do
-        current="$current\n$arg"
-      done
-    else
-      current=$(printf "$1")
-    fi
-    currentlength=$(printf "$current" | wc -l)
+    current=$(printf "$1" | grep "$input")
+    currentlength=$(printf "$current\n" | wc -l)
 
     # send "selected" to the first position if is out of currentlength
     selected=$((selected*$(( selected < currentlength))))
 
     # move cursor to bottom
-    printf "\33[%d;%dH%s" "$(tput lines)" "0" " " 2>/dev/null
-
+    printf "\33[%d;0H " "$(tput lines)" 2>/dev/null
     # print selected arrows
-    i=0
-    for arg in $(printf "$current")
-    do
-      if [ $i = $selected ]; then
-        printf " >> $arg\n" 2>/dev/null
-      else
-        printf "$arg\n" 2>/dev/null
-      fi
-      i=$((i+1))
-    done
+    printf "$current\n" | (
+      i=0 # pipeline commands get a new subshell, this must be inside it
+      while read -r arg
+      do
+        if [ $i = $selected ]; then
+          printf " >> $arg\n" 2>/dev/null
+        else
+          printf "$arg\n" 2>/dev/null
+        fi
+        i=$((i+1))
+      done
+    )
 
     # print menu section
     printf "\n\n"
@@ -92,33 +85,26 @@ menu() { # arg: file content (cat) as string or "string\nstring2\nstring3"
     # read char and store it on "insert" var
     readc insert
 
-    # analize char
+    # analyze char
     case $(printf "%d" "'$insert") in
       $(printf "27")) # esc
         selected=0
         input=""
         ;;
-      $(printf "127")) # del
+      $(printf "127")) # backspace
         input="${input%?}"
         ;;
       $(printf "9")) # tab
-        selected=$((selected+$(( selected < currentlength))))
-        selected=$((selected-$((currentlength*$(( selected > currentlength))))))
+        selected=$((selected+1))
         ;;
       $(printf "10")) # enter
-        i=0
-        for arg in $(printf "$current")
-        do
-          if [ $i = $selected ]; then
-            if [ "$input" = "$arg" ]; then
-              printf "$arg"
-              exit 0
-            else
-              input="$arg"
-            fi
-          fi
-          i=$((i+1))
-        done
+        arg=$(printf "$current" | sed "$((selected+1))q;d")
+        if [ "$input" = "$arg" ]; then
+          printf "$arg"
+          exit 0
+        else
+          input="$arg"
+        fi
         ;;
       *) # append char to input
         input="$input$insert"
@@ -131,20 +117,12 @@ menu() { # arg: file content (cat) as string or "string\nstring2\nstring3"
 
 # if no args are passed, read stdin to check if they come from pipe
 if [ $# = 0 ]; then
-  while read x
-  do
-    args="$args\n$x"
-  done
+  args=$(cat)
 else
   args=$@
   # if args is a file, cat the content of that file into args
   if [ -f "$args" ]; then
-    file="$args"
-    args=""
-    while read l
-    do
-      args="$args\n$l"
-    done < $file
+    args=$(cat "$args")
   fi
 fi
 
