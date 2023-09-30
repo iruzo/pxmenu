@@ -2,6 +2,17 @@
 
 - pxmenu is a simple POSIX sh script that creates a cli menu without external deps.
 
+# installation
+
+- Alpine
+```sh
+apk add pxmenu
+```
+- Others
+```sh
+curl https://raw.githubusercontent.com/iruzo/pxmenu/main/pxmenu -o pxmenu
+```
+
 # usage
 
 ```sh
