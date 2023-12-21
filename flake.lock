@@ -1,0 +1,44 @@
+{
+  "nodes": {
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1703034876,
+        "narHash": "sha256-4bMPFv/bs5g1nEsXQwXlrAGJgjv1Ilr0ejdaTkBwQLs=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "312ab59e8ade69e6083017bd9b98a2919f1fb86a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "ref": "nixos-23.05",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "pxmenu-repo": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1696035366,
+        "narHash": "sha256-cMn3Gs4f7qrCtN5mY1KLE5hSGeuj4nFZOA1f+kuru3U=",
+        "owner": "iruzo",
+        "repo": "pxmenu",
+        "rev": "22769160436167fd27a19415467f359544ce575e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "iruzo",
+        "repo": "pxmenu",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "nixpkgs": "nixpkgs",
+        "pxmenu-repo": "pxmenu-repo"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
